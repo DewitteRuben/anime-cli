@@ -1,4 +1,4 @@
-package anime
+package api
 
 import (
 	"encoding/json"
@@ -29,15 +29,15 @@ type Detail struct {
 	MalURL   string
 }
 
-type Stream struct {
+type StreamSource struct {
 	URL    string
 	Type   string
 	Origin string
 }
 
 type Episode struct {
-	Number  uint64
-	Streams []Stream
+	Number        uint64
+	StreamSources []StreamSource
 }
 
 type AnimeApi interface {
@@ -97,19 +97,17 @@ func (animixApi *AnimixPlayApi) GetEpisode(result SearchResult, number uint64) (
 		return Episode{}, err
 	}
 
-	var streams []Stream
+	var streams []StreamSource
 	streamListDoc.Find(".mirror_link").First().Find(".dowload").Each(func(i int, s *goquery.Selection) {
 		anchor := s.Find("a")
 		streamType := strings.TrimSpace(strings.Split(anchor.Text(), "\n")[1])
 		href, _ := anchor.Attr("href")
-		fmt.Printf("%+v\n", href)
-
-		streams = append(streams, Stream{URL: href, Type: streamType, Origin: "AnimixPlay"})
+		streams = append(streams, StreamSource{URL: href, Type: streamType, Origin: "AnimixPlay"})
 	})
 
 	return Episode{
-		Number:  number,
-		Streams: streams,
+		Number:        number,
+		StreamSources: streams,
 	}, nil
 }
 
@@ -151,68 +149,6 @@ func (animixApi *AnimixPlayApi) GetDetail(result SearchResult) (Detail, error) {
 		Episodes: uint64(animeMetaData["episodes"].(float64)),
 	}, nil
 }
-
-// func (animixApi *AnimixPlayApi) Detail(result SearchResult) {
-// 	res, err := http.Get(result.PageURL)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	doc, err := goquery.NewDocumentFromReader(res.Body)
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	episodeData := strings.TrimSpace(doc.Find("#epslistplace").Text())
-// 	var data map[string]interface{}
-// 	err = json.Unmarshal([]byte(episodeData), &data)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	urlEp := data["0"].(string)
-
-// 	p, _ := url.Parse(urlEp)
-
-// 	fmt.Println()
-
-// 	res2, _ := http.Get(fmt.Sprintf("https://gogoplay1.com/download?id=%s", p.Query().Get("id")))
-
-// 	doc2, _ := goquery.NewDocumentFromReader(res2.Body)
-
-// 	divNode := goquery.NewDocumentFromNode(doc2.Find(".dowload").Get(3))
-// 	href, _ := divNode.Find("a").Attr("href")
-// 	fmt.Printf("%+v\n", href)
-
-// 	if err := vlc.Init(); err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer vlc.Release()
-
-// 	// Create a new player.
-// 	player, err := vlc.NewPlayer()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer func() {
-// 		player.Stop()
-// 		player.Release()
-// 	}()
-
-// 	client := http.Client{}
-// 	req, _ := http.NewRequest("GET", href, nil)
-// 	req.Header.Set("referer", "https://gogoplay1.com/")
-// 	res, err = client.Do(req)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer res.Body.Close()
-
-// 	out, _ := os.Create("test.mp4")
-// 	defer out.Close()
-// 	io.Copy(out, res.Body)
-
-// }
 
 func (animixApi *AnimixPlayApi) Search(name string) ([]SearchResult, error) {
 	body := strings.NewReader(fmt.Sprintf("qfast=%s&root=animixplay.to", name))

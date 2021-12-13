@@ -1,16 +1,65 @@
 package main
 
 import (
-	"anime-cli/anime"
+	"anime-cli/api"
+	"anime-cli/cli"
+	"anime-cli/video"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	api := anime.NewAnimixPlayApi()
-	results, _ := api.Search("death note")
+	sig := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+	cliArgs := cli.GetCliArgs()
 
-	ep, _ := api.GetEpisode(results[0], 1)
+	searchInput, err := cli.PromptSearchAnime()
+	if err != nil {
+		panic(err)
+	}
 
-	player := anime.DefaultPlayer{}
-	player.Play(ep.Streams[3])
+	api := api.NewAnimixPlayApi()
+	results, err := api.Search(searchInput)
+	if err != nil {
+		panic(err)
+	}
 
+	selectedAnime, err := cli.PromptSelectAnime(results)
+	if err != nil {
+		panic(err)
+	}
+
+	animeDetail, err := api.GetDetail(selectedAnime)
+	if err != nil {
+		panic(err)
+	}
+
+	selectedEpisode, err := cli.PromptEpisodeNumber(animeDetail.Episodes)
+	if err != nil {
+		panic(err)
+	}
+
+	ep, err := api.GetEpisode(selectedAnime, selectedEpisode)
+	if err != nil {
+		panic(err)
+	}
+
+	source, err := cli.PromptSelectSource(ep.StreamSources)
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		player := video.NewPlayer(cliArgs.Player)
+		player.Play(source)
+	}()
+
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sig
+		done <- true
+	}()
+
+	<-done
 }
