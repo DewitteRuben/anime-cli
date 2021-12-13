@@ -1,9 +1,10 @@
 package anime
 
 import (
-	"io"
-	"net/http"
+	"bytes"
+	"fmt"
 	"os"
+	"os/exec"
 )
 
 type Player interface {
@@ -22,30 +23,19 @@ func fileExists(filename string) bool {
 }
 
 func (dp DefaultPlayer) Play(stream Stream) {
-	go func() {
-		httpClient := http.Client{}
-		req, err := http.NewRequest("GET", stream.URL, nil)
-		if err != nil {
-			return
-		}
+	arguments := []string{stream.URL}
+	if stream.Origin == "AnimixPlay" {
+		arguments = append(arguments, "--http-referrer='https://gogoplay1.com/'")
+	}
 
-		if stream.Origin == "AnimixPlay" {
-			req.Header.Set("referer", "https://gogoplay1.com/")
-		}
-
-		resp, err := httpClient.Do(req)
-		if err != nil {
-			return
-		}
-
-		defer resp.Body.Close()
-
-		out, err := os.Create("temp")
-		if err != nil {
-			return
-		}
-		defer out.Close()
-
-		io.Copy(out, resp.Body)
-	}()
+	cmd := exec.Command("vlc", arguments...)
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return
+	}
 }

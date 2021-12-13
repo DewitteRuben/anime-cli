@@ -77,7 +77,7 @@ func (animixApi *AnimixPlayApi) GetEpisode(result SearchResult, number uint64) (
 		return Episode{}, err
 	}
 
-	urlEp, ok := data[fmt.Sprint(number+1)].(string)
+	urlEp, ok := data[fmt.Sprint(number-1)].(string)
 	if !ok {
 		return Episode{}, errors.New("url episode was not a string")
 	}
