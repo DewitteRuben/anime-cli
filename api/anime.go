@@ -28,6 +28,7 @@ type Episode struct {
 }
 
 type AnimeApi interface {
+	Tag() AnimeApiTag
 	GetDetail(SearchResult) (Detail, error)
 	GetEpisode(SearchResult, uint64) (Episode, error)
 	Search(string) ([]SearchResult, error)
@@ -35,8 +36,22 @@ type AnimeApi interface {
 
 func NewApi(apiTag string) AnimeApi {
 	switch apiTag {
-	case "animixplay":
+	case AnimixPlay.String():
 		return NewAnimixPlayApi()
 	}
 	return nil
+}
+
+type AnimeApiTag int64
+
+const (
+	AnimixPlay AnimeApiTag = iota
+)
+
+func (s AnimeApiTag) String() string {
+	switch s {
+	case AnimixPlay:
+		return "animixplay"
+	}
+	return "unknown"
 }

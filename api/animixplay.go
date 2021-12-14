@@ -78,6 +78,10 @@ func (animixApi AnimixPlayApi) GetEpisode(result SearchResult, number uint64) (E
 	}, nil
 }
 
+func (AnimixPlayApi) Tag() AnimeApiTag {
+	return AnimixPlay
+}
+
 func (animixApi AnimixPlayApi) GetDetail(result SearchResult) (Detail, error) {
 	pageHTML, err := http.Get(result.PageURL)
 	if err != nil {

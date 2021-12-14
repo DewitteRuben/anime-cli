@@ -3,11 +3,17 @@ package main
 import (
 	"anime-cli/api"
 	"anime-cli/cli"
+	"anime-cli/storage"
 	"anime-cli/video"
 	"log"
 )
 
 func main() {
+	err := storage.Init()
+	if err != nil {
+		return
+	}
+
 	cliArgs, err := cli.GetCliArgs()
 	if err != nil {
 		return
@@ -78,6 +84,14 @@ func main() {
 
 				break
 			}
+
+			prefs := storage.UserPrefs{
+				PrefferedApi:      api.Tag(),
+				PreferredSource:   source,
+				CurrentlyWatching: selectedAnime,
+			}
+
+			storage.Persist(prefs)
 
 			player := video.NewPlayer(cliArgs.Player)
 			player.Play(source)

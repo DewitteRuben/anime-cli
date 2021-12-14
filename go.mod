@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/integrii/flaggy v1.4.4 // indirect
 	github.com/jessevdk/go-flags v1.5.0 // indirect
 	github.com/manifoldco/promptui v0.9.0
