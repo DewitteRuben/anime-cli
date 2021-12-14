@@ -2,6 +2,8 @@ package video
 
 import (
 	"anime-cli/api"
+	"anime-cli/cli"
+	"os"
 	"os/exec"
 )
 
@@ -31,16 +33,26 @@ type MPV struct{}
 type VLC struct{}
 
 func (mpv MPV) Play(stream api.StreamSource) {
-	arguments := []string{stream.URL}
+	arguments := []string{}
 	if stream.Origin == "AnimixPlay" {
-		arguments = append(arguments, "--http-header-fields='referrer: https://gogoplay1.com/'")
+		arguments = append(arguments, "--http-header-fields=Referer: https://gogoplay1.com/")
 	}
+	arguments = append(arguments, stream.URL)
 
-	_ = runCommand("mpv", arguments)
+	err := runCommand("mpv", arguments)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func runCommand(command string, arguments []string) error {
-	return exec.Command(command, arguments...).Run()
+	cmd := exec.Command(command, arguments...)
+	config := cli.GetCliArgs()
+	if config.Verbose {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
+	return cmd.Run()
 }
 
 func (dp VLC) Play(stream api.StreamSource) {
@@ -49,5 +61,8 @@ func (dp VLC) Play(stream api.StreamSource) {
 		arguments = append(arguments, "--http-referrer='https://gogoplay1.com/'")
 	}
 
-	_ = runCommand("vlc", arguments)
+	err := runCommand("vlc", arguments)
+	if err != nil {
+		panic(err)
+	}
 }
