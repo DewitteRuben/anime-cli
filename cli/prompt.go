@@ -10,6 +10,10 @@ import (
 )
 
 func PromptSelectAnime(searchResults []api.SearchResult) (api.SearchResult, error) {
+	if len(searchResults) == 0 {
+		return api.SearchResult{}, errors.New("search results are empty")
+	}
+
 	selectPrompt := promptui.Select{
 		Label: "Select an anime",
 		Items: searchResults,
@@ -23,6 +27,7 @@ func PromptSelectAnime(searchResults []api.SearchResult) (api.SearchResult, erro
 
 	index, _, err := selectPrompt.Run()
 	if err != nil {
+		print(err)
 		return api.SearchResult{}, err
 	}
 
@@ -30,6 +35,10 @@ func PromptSelectAnime(searchResults []api.SearchResult) (api.SearchResult, erro
 }
 
 func PromptSelectSource(sources []api.StreamSource) (api.StreamSource, error) {
+	if len(sources) == 0 {
+		return api.StreamSource{}, errors.New("no streams found")
+	}
+
 	selectPrompt := promptui.Select{
 		Label: "Select a source",
 		Items: sources,

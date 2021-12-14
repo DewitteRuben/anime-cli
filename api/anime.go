@@ -41,14 +41,22 @@ type Episode struct {
 }
 
 type AnimeApi interface {
-	GetDetail(SearchResult) Detail
-	GetEpisode(SearchResult, uint64) Episode
-	Search(string) []SearchResult
+	GetDetail(SearchResult) (Detail, error)
+	GetEpisode(SearchResult, uint64) (Episode, error)
+	Search(string) ([]SearchResult, error)
 }
 
 type AnimixPlayApi struct {
 	BaseURL   string
 	SearchURL string
+}
+
+func NewApi(apiTag string) AnimeApi {
+	switch apiTag {
+	case "animixplay":
+		return NewAnimixPlayApi()
+	}
+	return nil
 }
 
 func NewAnimixPlayApi() AnimixPlayApi {
@@ -58,7 +66,7 @@ func NewAnimixPlayApi() AnimixPlayApi {
 	}
 }
 
-func (animixApi *AnimixPlayApi) GetEpisode(result SearchResult, number uint64) (Episode, error) {
+func (animixApi AnimixPlayApi) GetEpisode(result SearchResult, number uint64) (Episode, error) {
 	res, err := http.Get(result.PageURL)
 	if err != nil {
 		return Episode{}, err
@@ -111,7 +119,7 @@ func (animixApi *AnimixPlayApi) GetEpisode(result SearchResult, number uint64) (
 	}, nil
 }
 
-func (animixApi *AnimixPlayApi) GetDetail(result SearchResult) (Detail, error) {
+func (animixApi AnimixPlayApi) GetDetail(result SearchResult) (Detail, error) {
 	pageHTML, err := http.Get(result.PageURL)
 	if err != nil {
 		return Detail{}, err
@@ -150,7 +158,7 @@ func (animixApi *AnimixPlayApi) GetDetail(result SearchResult) (Detail, error) {
 	}, nil
 }
 
-func (animixApi *AnimixPlayApi) Search(name string) ([]SearchResult, error) {
+func (animixApi AnimixPlayApi) Search(name string) ([]SearchResult, error) {
 	body := strings.NewReader(fmt.Sprintf("qfast=%s&root=animixplay.to", name))
 	resp, err := http.Post(animixApi.SearchURL, "application/x-www-form-urlencoded", body)
 	if err != nil {

@@ -3,6 +3,7 @@ package video
 import (
 	"anime-cli/api"
 	"anime-cli/cli"
+	"errors"
 	"os"
 	"os/exec"
 )
@@ -33,6 +34,10 @@ type MPV struct{}
 type VLC struct{}
 
 func (mpv MPV) Play(stream api.StreamSource) error {
+	if stream.URL == "" {
+		return errors.New("source is empty")
+	}
+
 	arguments := []string{}
 	if stream.Origin == "AnimixPlay" {
 		arguments = append(arguments, "--http-header-fields=Referer: https://gogoplay1.com/")
@@ -53,6 +58,10 @@ func runCommand(command string, arguments []string) error {
 }
 
 func (dp VLC) Play(stream api.StreamSource) error {
+	if stream.URL == "" {
+		return errors.New("source is empty")
+	}
+
 	arguments := []string{stream.URL}
 	if stream.Origin == "AnimixPlay" {
 		arguments = append(arguments, "--http-referrer='https://gogoplay1.com/'")
