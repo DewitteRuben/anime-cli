@@ -20,7 +20,7 @@ anime-cli [OPTIONS]
 
 Application Options:
   -p, --player=[vlc|mpv] Video player to play videos with (default: vlc)
-  -a, --api=[animixplay] Site to fetch data and video streams from (default: animixplay)
+  -a, --api=[animixplay] Site to fetch data and stream URLs from (default: animixplay)
   -v, --verbose          Show verbose debug information
 
 Help Options:
