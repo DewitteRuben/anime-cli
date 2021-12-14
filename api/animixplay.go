@@ -26,7 +26,7 @@ func NewAnimixPlayApi() AnimixPlayApi {
 }
 
 func (animixApi AnimixPlayApi) GetEpisode(result SearchResult, number uint64) (Episode, error) {
-	res, err := http.Get(result.PageURL)
+	res, err := http.Get(result.DetailPageURL)
 	if err != nil {
 		return Episode{}, err
 	}
@@ -69,7 +69,7 @@ func (animixApi AnimixPlayApi) GetEpisode(result SearchResult, number uint64) (E
 		anchor := s.Find("a")
 		streamType := strings.TrimSpace(strings.Split(anchor.Text(), "\n")[1])
 		href, _ := anchor.Attr("href")
-		streams = append(streams, StreamSource{URL: href, Type: streamType, Origin: "AnimixPlay"})
+		streams = append(streams, StreamSource{URL: href, Type: streamType, Origin: animixApi.Tag()})
 	})
 
 	return Episode{
@@ -83,7 +83,7 @@ func (AnimixPlayApi) Tag() AnimeApiTag {
 }
 
 func (animixApi AnimixPlayApi) GetDetail(result SearchResult) (Detail, error) {
-	pageHTML, err := http.Get(result.PageURL)
+	pageHTML, err := http.Get(result.DetailPageURL)
 	if err != nil {
 		return Detail{}, err
 	}
@@ -157,10 +157,10 @@ func (animixApi AnimixPlayApi) Search(name string) ([]SearchResult, error) {
 		pageURL, _ := s.Find("a").Attr("href")
 
 		result := SearchResult{
-			Title:       name,
-			Description: description,
-			ImageSrc:    imgSrc,
-			PageURL:     animixApi.BaseURL + pageURL,
+			Title:         name,
+			Description:   description,
+			ImageSrc:      imgSrc,
+			DetailPageURL: animixApi.BaseURL + pageURL,
 		}
 
 		results = append(results, result)

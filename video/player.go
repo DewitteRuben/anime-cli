@@ -39,9 +39,13 @@ func (mpv MPV) Play(stream api.StreamSource) error {
 	}
 
 	arguments := []string{}
-	if stream.Origin == "AnimixPlay" {
+	switch stream.Origin {
+	case api.AnimixPlay:
+		fallthrough
+	case api.GoGoAnime:
 		arguments = append(arguments, "--http-header-fields=Referer: https://gogoplay1.com/")
 	}
+
 	arguments = append(arguments, stream.URL)
 
 	return runCommand("mpv", arguments)
@@ -67,7 +71,10 @@ func (dp VLC) Play(stream api.StreamSource) error {
 	}
 
 	arguments := []string{stream.URL}
-	if stream.Origin == "AnimixPlay" {
+	switch stream.Origin {
+	case api.AnimixPlay:
+		fallthrough
+	case api.GoGoAnime:
 		arguments = append(arguments, "--http-referrer='https://gogoplay1.com/'")
 	}
 
