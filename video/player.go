@@ -8,7 +8,7 @@ import (
 )
 
 type Player interface {
-	Play(api.StreamSource)
+	Play(api.StreamSource) error
 }
 
 func NewVLCPlayer() VLC {
@@ -32,17 +32,14 @@ func NewPlayer(playerTag string) Player {
 type MPV struct{}
 type VLC struct{}
 
-func (mpv MPV) Play(stream api.StreamSource) {
+func (mpv MPV) Play(stream api.StreamSource) error {
 	arguments := []string{}
 	if stream.Origin == "AnimixPlay" {
 		arguments = append(arguments, "--http-header-fields=Referer: https://gogoplay1.com/")
 	}
 	arguments = append(arguments, stream.URL)
 
-	err := runCommand("mpv", arguments)
-	if err != nil {
-		panic(err)
-	}
+	return runCommand("mpv", arguments)
 }
 
 func runCommand(command string, arguments []string) error {
@@ -55,14 +52,11 @@ func runCommand(command string, arguments []string) error {
 	return cmd.Run()
 }
 
-func (dp VLC) Play(stream api.StreamSource) {
+func (dp VLC) Play(stream api.StreamSource) error {
 	arguments := []string{stream.URL}
 	if stream.Origin == "AnimixPlay" {
 		arguments = append(arguments, "--http-referrer='https://gogoplay1.com/'")
 	}
 
-	err := runCommand("vlc", arguments)
-	if err != nil {
-		panic(err)
-	}
+	return runCommand("vlc", arguments)
 }
