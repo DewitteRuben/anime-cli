@@ -77,8 +77,6 @@ func savePrefs(data UserPrefs) error {
 	}
 
 	filePath := fmt.Sprintf("%s/prefs.json", dataFolder)
-	fmt.Println(filePath)
-
 	return ioutil.WriteFile(filePath, file, 0644)
 }
 

@@ -9,14 +9,16 @@ import (
 )
 
 func main() {
-	err := storage.Init()
+	cliArgs, err := cli.GetCliArgs()
 	if err != nil {
 		return
 	}
 
-	cliArgs, err := cli.GetCliArgs()
+	err = storage.Init()
 	if err != nil {
-		return
+		if cliArgs.Verbose {
+			log.Println(err)
+		}
 	}
 
 	for {

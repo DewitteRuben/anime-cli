@@ -27,7 +27,6 @@ func PromptSelectAnime(searchResults []api.SearchResult) (api.SearchResult, erro
 
 	index, _, err := selectPrompt.Run()
 	if err != nil {
-		print(err)
 		return api.SearchResult{}, err
 	}
 
