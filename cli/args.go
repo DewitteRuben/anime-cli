@@ -9,7 +9,7 @@ import (
 
 type CliArgs struct {
 	Player   string `short:"p" long:"player" description:"Video player to play videos with" choice:"vlc" choice:"mpv"`
-	AnimeApi string `short:"a" long:"api" description:"Api implementation to fetch videos from" choice:"animixplay"`
+	AnimeApi string `short:"a" long:"api" description:"Site to fetch data and stream URLs from" choice:"animixplay"`
 	Verbose  bool   `short:"v" long:"verbose" description:"Show verbose debug information"`
 }
 
