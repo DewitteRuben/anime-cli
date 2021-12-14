@@ -188,7 +188,6 @@ func (animixApi AnimixPlayApi) Search(name string) ([]SearchResult, error) {
 
 	var results []SearchResult
 	doc.Find("li").Each(func(i int, s *goquery.Selection) {
-		// For each item found, get the title
 		name := s.Find("p.name").Text()
 		description := s.Find("p.infotext").Text()
 		imgSrc, _ := s.Find("img").Attr("src")
