@@ -8,7 +8,10 @@ import (
 )
 
 func main() {
-	cliArgs := cli.GetCliArgs()
+	cliArgs, err := cli.GetCliArgs()
+	if err != nil {
+		return
+	}
 
 	for {
 		searchInput, err := cli.PromptSearchAnime()
@@ -17,7 +20,7 @@ func main() {
 				log.Println(err)
 			}
 
-			break
+			return
 		}
 
 		api := api.NewApi(cliArgs.AnimeApi)
@@ -27,7 +30,7 @@ func main() {
 				log.Println(err)
 			}
 
-			break
+			return
 		}
 
 		selectedAnime, err := cli.PromptSelectAnime(results)
@@ -36,7 +39,7 @@ func main() {
 				log.Println(err)
 			}
 
-			break
+			return
 		}
 
 		animeDetail, err := api.GetDetail(selectedAnime)
@@ -45,7 +48,7 @@ func main() {
 				log.Println(err)
 			}
 
-			break
+			return
 		}
 
 		for {

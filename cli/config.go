@@ -1,32 +1,34 @@
 package cli
 
-import "flag"
+import (
+	"flag"
+	"os"
+
+	"github.com/jessevdk/go-flags"
+)
 
 type CliArgs struct {
-	Player   string
-	AnimeApi string
-	Verbose  bool
+	Player   string `short:"p" long:"player" description:"Video player to play videos with" choice:"vlc" choice:"mpv"`
+	AnimeApi string `short:"a" long:"api" description:"Api implementation to fetch videos from" choice:"animixplay"`
+	Verbose  bool   `short:"v" long:"verbose" description:"Show verbose debug information"`
 }
 
-var cliArgs CliArgs
-
-func InitCliArgs() {
-	videoPlayer := flag.String("player", "vlc", "Video player (Supported: VLC, MPV)")
-	animeApi := flag.String("api", "animixplay", "Api implementation to fetch videos from (Supported: animixplay)")
-	verbose := flag.Bool("v", false, "Verbose logs")
-
-	flag.Parse()
-
-	cliArgs = CliArgs{
-		Player:   *videoPlayer,
-		AnimeApi: *animeApi,
-		Verbose:  *verbose,
-	}
+var cliArgs = CliArgs{
+	Player:   "vlc",
+	AnimeApi: "animixplay",
+	Verbose:  false,
 }
 
-func GetCliArgs() CliArgs {
+func InitCliArgs() ([]string, error) {
+	return flags.ParseArgs(&cliArgs, os.Args)
+}
+
+func GetCliArgs() (CliArgs, error) {
 	if !flag.Parsed() {
-		InitCliArgs()
+		_, err := InitCliArgs()
+		if err != nil {
+			return CliArgs{}, err
+		}
 	}
-	return cliArgs
+	return cliArgs, nil
 }

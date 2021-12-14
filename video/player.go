@@ -49,7 +49,11 @@ func (mpv MPV) Play(stream api.StreamSource) error {
 
 func runCommand(command string, arguments []string) error {
 	cmd := exec.Command(command, arguments...)
-	config := cli.GetCliArgs()
+	config, err := cli.GetCliArgs()
+	if err != nil {
+		return err
+	}
+
 	if config.Verbose {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
