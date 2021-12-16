@@ -13,6 +13,11 @@ go mod download
 go build .
 ```
 
+## Install
+
+Download the latest pre-compiled binary that fits your OS and architecture [here](https://github.com/DewitteRuben/anime-cli/releases/latest)
+If your architecture and/or your OS is not in the list, please consider compiling your own using Golang.
+
 ## Usage
 
 ```
@@ -29,4 +34,4 @@ Help Options:
 
 ## Dependencies
 
-* vlc or mpv
+* vlc or mpv (make sure any or both of them are exposed in $PATH)
