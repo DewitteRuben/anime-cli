@@ -89,8 +89,6 @@ func main() {
 				break
 			}
 
-			fmt.Printf("%+v\n", ep)
-
 			source, err := cli.PromptSelectSource(ep.StreamSources)
 			if err != nil {
 				if cliArgs.Verbose {
