@@ -36,3 +36,4 @@ Help Options:
 ## Dependencies
 
 * vlc or mpv (make sure any or both of them are exposed in $PATH)
+* openssl
