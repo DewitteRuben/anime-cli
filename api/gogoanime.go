@@ -1,20 +1,107 @@
 package api
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
+	b64 "encoding/base64"
+
 	"github.com/PuerkitoBio/goquery"
+	"github.com/spacemonkeygo/openssl"
 )
 
 type GoGoAnimeApi struct {
 	BaseURL   string
 	SearchURL string
+}
+
+type SourceResponse struct {
+	Source []struct {
+		File  string `json:"file"`
+		Label string `json:"label"`
+		Type  string `json:"type"`
+	} `json:"source"`
+	SourceBk []struct {
+		File  string `json:"file"`
+		Label string `json:"label"`
+		Type  string `json:"type"`
+	} `json:"source_bk"`
+	Track struct {
+		Tracks []struct {
+			File string `json:"file"`
+			Kind string `json:"kind"`
+		} `json:"tracks"`
+	} `json:"track"`
+	Advertising []interface{} `json:"advertising"`
+	Linkiframe  string        `json:"linkiframe"`
+}
+
+func GetGoGoAnimeSourceData(epId string) (SourceResponse, error) {
+	secretKey, err := hex.DecodeString("3235373436353338353932393338333936373634363632383739383333323838")
+	if err != nil {
+		return SourceResponse{}, err
+	}
+
+	iv, err := hex.DecodeString("34323036393133333738303038313335")
+	if err != nil {
+		return SourceResponse{}, err
+	}
+
+	cipher, err := openssl.GetCipherByName("aes-256-cbc")
+	if err != nil {
+		return SourceResponse{}, err
+	}
+
+	ctx, err := openssl.NewEncryptionCipherCtx(cipher, nil, secretKey, iv)
+	if err != nil {
+		return SourceResponse{}, err
+	}
+
+	cipherbytes, err := ctx.EncryptUpdate([]byte(epId))
+	if err != nil {
+		return SourceResponse{}, err
+	}
+
+	finalbytes, err := ctx.EncryptFinal()
+	if err != nil {
+		return SourceResponse{}, err
+	}
+
+	cipherbytes = append(cipherbytes, finalbytes...)
+
+	encryptedId := b64.StdEncoding.EncodeToString(cipherbytes)
+
+	params := url.Values{}
+	params.Add("id", encryptedId)
+	params.Add("time", `69420691337800813569`)
+	body := strings.NewReader(params.Encode())
+
+	req, err := http.NewRequest("POST", os.ExpandEnv("https://gogoplay.io/encrypt-ajax.php"), body)
+	if err != nil {
+		return SourceResponse{}, err
+	}
+	req.Header.Set("X-Requested-With", "XMLHttpRequest")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return SourceResponse{}, err
+	}
+
+	defer resp.Body.Close()
+
+	respJSON := SourceResponse{}
+	json.NewDecoder(resp.Body).Decode(&respJSON)
+
+	return respJSON, nil
 }
 
 func NewGoGoAnimeApi() GoGoAnimeApi {
@@ -36,27 +123,21 @@ func (gogoApi GoGoAnimeApi) GetEpisode(result SearchResult, number uint64) (Epis
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		return Episode{}, err
-
 	}
 
 	streamListURL, _ := doc.Find(".dowloads").First().Find("a").Attr("href")
-	streamListHTML, err := http.Get(streamListURL)
-	if err != nil {
-		return Episode{}, err
-	}
+	r := regexp.MustCompile(`id=([^&]*)`)
+	epId := r.FindStringSubmatch(streamListURL)[0][3:]
 
-	streamListDoc, err := goquery.NewDocumentFromReader(streamListHTML.Body)
+	sourceData, err := GetGoGoAnimeSourceData(epId)
 	if err != nil {
 		return Episode{}, err
 	}
 
 	var streams []StreamSource
-	streamListDoc.Find(".mirror_link").First().Find(".dowload").Each(func(i int, s *goquery.Selection) {
-		anchor := s.Find("a")
-		streamType := strings.TrimSpace(strings.Split(anchor.Text(), "\n")[1])
-		href, _ := anchor.Attr("href")
-		streams = append(streams, StreamSource{URL: href, Type: streamType, Origin: gogoApi.Tag()})
-	})
+	for _, source := range sourceData.Source {
+		streams = append(streams, StreamSource{URL: source.File, Type: source.Label, Origin: gogoApi.Tag()})
+	}
 
 	return Episode{
 		Number:        number,

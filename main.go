@@ -89,6 +89,8 @@ func main() {
 				break
 			}
 
+			fmt.Printf("%+v\n", ep)
+
 			source, err := cli.PromptSelectSource(ep.StreamSources)
 			if err != nil {
 				if cliArgs.Verbose {
@@ -107,7 +109,13 @@ func main() {
 			storage.Persist(prefs)
 
 			player := video.NewPlayer(cliArgs.Player)
-			player.Play(source)
+			err = player.Play(source)
+			if err != nil {
+				if cliArgs.Verbose {
+					fmt.Println(err)
+				}
+
+			}
 		}
 	}
 }
